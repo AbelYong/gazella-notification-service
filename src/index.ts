@@ -5,7 +5,8 @@ import swaggerUi from "swagger-ui-express"
 import { swaggerOptions } from "./swagger.js"
 import { redisClient } from "./caching/redis_client.js"
 import { rabbitMQService } from "./messaging/rabbitmq.js"
-import { NotificationsRouter } from "./routes.js"
+import { makeStreamRouter } from "./routes.js"
+import { StreamService } from "./services/stream_service.js"
 import { globalErrorHandler } from "./handlers/error_handler.js"
 
 dotenv.config();
@@ -24,7 +25,7 @@ async function startServer() {
 
     await bootstrap();
 
-    app.use("/", NotificationsRouter);
+    app.use("/", makeStreamRouter(new StreamService(redisClient)));
 
     app.use(globalErrorHandler);
 

@@ -2,15 +2,24 @@ import { eq } from "drizzle-orm"
 import { DbClient } from "../drizzle/db.js"
 import { SocialNotifications } from "../drizzle/schema.js"
 import { NewFollowerInput } from "../schemas/social_schema.js"
+import { DbError } from "./db_error.js"
 
 export class SocialRepository {
     constructor(private readonly db: DbClient) {}
 
     async storeNewFollowerNotification(message: NewFollowerInput) {
-        await this.db.insert(SocialNotifications).values({
-            addresseeId: message.followedId,
-            messageBody: JSON.stringify(message)
-        });
+        try {
+            const [insertedNotification] = await this.db.insert(SocialNotifications).values({
+                addresseeId: message.followedId,
+                messageBody: JSON.stringify(message)
+            }).returning();
+
+            return insertedNotification;
+        } catch (error) {
+            const message = "Failed to save new follower notification"
+            console.error(message, error);
+            throw new DbError(error, message);
+        }
     }
 
     async getUnreadNotifications(addresseId: string) {

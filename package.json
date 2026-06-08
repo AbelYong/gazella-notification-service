@@ -31,6 +31,8 @@
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.0.1",
+    "@testcontainers/rabbitmq": "^12.0.1",
+    "@testcontainers/redis": "^12.0.1",
     "@types/amqplib": "^0.10.8",
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.2",
@@ -38,6 +40,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "@vitest/coverage-v8": "^4.1.8",
     "drizzle-kit": "^1.0.0-beta.22",
+    "eventsource": "^4.1.0",
     "tsup": "^8.5.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",

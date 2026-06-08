@@ -17,5 +17,6 @@ export default defineConfig({
 declare module "vitest" {
   export interface ProvidedContext {
     dbUri: string;
+    rabbitUri: string;
   }
 }

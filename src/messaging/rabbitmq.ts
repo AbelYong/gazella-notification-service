@@ -145,8 +145,10 @@ export class RabbitMQService {
                 await this.connection.close();
             }
             console.log("[RabbitMQ] Disconnected gracefully from RabbitMQ");
-        } catch (error) {
-            console.error("[RabbitMQ] Error on closing RabbitMQ connection", error);
+        } catch (error: any) {
+            if (error.message !== "Connection closing") {
+                console.error("[RabbitMQ] Error on closing RabbitMQ connection", error);
+            }
         }
     }
 }
@@ -166,4 +168,4 @@ export function getRetryCount(msg: ConsumeMessage): number {
     return deathEntry ? deathEntry.count : 0;
 }
 
-export const rabbitMQService = new RabbitMQService(process.env["RABBITMQ_URL"] || "amqp://localhost:5672", 13000);
+export const rabbitMQService = new RabbitMQService(process.env["RABBITMQ_URL"] || "amqp://localhost:5672", 5000);
