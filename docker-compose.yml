@@ -1,0 +1,101 @@
+services:
+  notifications-postgres:
+    image: postgres:18.3-alpine
+    container_name: notifications_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_ADMIN}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_pass
+      DB_USER: ${DB_USER}
+      DB_USER_PASS: ${DB_USER_PASS}
+    ports:
+      - "9005:5432"
+    secrets:
+      - pg_pass
+    volumes:
+      - notifications_pgdata:/var/lib/postgresql
+      - ./init-user.sh:/docker-entrypoint-initdb.d/init-user.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_ADMIN} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gazella-net
+  
+  notifications-redis:
+    image: redis:7.2-alpine
+    container_name: notifications_redis
+    restart: unless-stopped
+    environment:
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_USER_PASS=${REDIS_USER_PASS}
+    secrets:
+      - redis_admin_pass
+      - redis_user_pass
+    ports:
+      - "6379:6379"
+    command: >
+      sh -c '
+        mkdir -p /etc/redis &&
+        echo "user default on >$$(cat /run/secrets/redis_admin_pass) ~* &* +@all" > /etc/redis/users.acl &&
+        echo "user $${REDIS_USER} on >$$(cat /run/secrets/redis_user_pass) ~notifications:* +@all" >> /etc/redis/users.acl &&
+        redis-server --aclfile /etc/redis/users.acl
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a $$(cat /run/secrets/redis_admin_pass) ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gazella-net
+  
+  notifications-migrator:
+    build:
+      context: .
+    container_name: notifications_migrator
+    environment:
+      - DATABASE_ADMIN_URL=${DATABASE_ADMIN_URL}
+    networks:
+      - gazella-net
+    command: npm run db:migrate
+    depends_on:
+      notifications-postgres:
+        condition: service_healthy
+  
+  notifications-service:
+    build:
+      context: .
+      target: development
+    container_name: notifications_service
+    restart: unless-stopped
+    ports:
+      - "13000:13000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://${REDIS_USER}:${REDIS_USER_PASS}@notifications-redis:6379
+    env_file:
+      - .env
+    networks:
+      - gazella-net
+    depends_on:
+      notifications-migrator:
+        condition: service_completed_successfully
+      notifications-redis:
+        condition: service_healthy
+
+volumes:
+  notifications_pgdata:
+
+secrets:
+  pg_pass:
+    file: ./pg_password.txt
+  redis_admin_pass:
+    file: ./redis_admin_pass.txt
+  redis_user_pass:
+    file: ./redis_user_pass.txt
+
+networks:
+  gazella-net:
+    external: true

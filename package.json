@@ -1,0 +1,45 @@
+{
+  "name": "notification-service",
+  "version": "1.0.0",
+  "description": "Notification service for the Gazella system",
+  "license": "ISC",
+  "author": "AbelYong",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node dist/migrate.js",
+    "build": "tsup src/index.ts src/migrate.ts --format esm --clean",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "amqplib": "^2.0.1",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^1.0.0-beta.22",
+    "express": "^5.2.1",
+    "express-jwt": "^8.5.1",
+    "jwks-rsa": "^4.0.1",
+    "postgres": "^3.4.9",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "^12.0.1",
+    "@types/amqplib": "^0.10.8",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.8",
+    "drizzle-kit": "^1.0.0-beta.22",
+    "tsup": "^8.5.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}
