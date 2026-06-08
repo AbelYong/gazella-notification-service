@@ -40,7 +40,7 @@ services:
       sh -c '
         mkdir -p /etc/redis &&
         echo "user default on >$$(cat /run/secrets/redis_admin_pass) ~* &* +@all" > /etc/redis/users.acl &&
-        echo "user $${REDIS_USER} on >$$(cat /run/secrets/redis_user_pass) ~notifications:* +@all" >> /etc/redis/users.acl &&
+        echo "user $${REDIS_USER} on >$$(cat /run/secrets/redis_user_pass) ~ticket:* +@all" >> /etc/redis/users.acl &&
         redis-server --aclfile /etc/redis/users.acl
       '
     healthcheck:

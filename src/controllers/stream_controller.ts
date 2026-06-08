@@ -12,6 +12,8 @@ export const makeGetTicketController = (service: StreamService) => {
 
         const ticket = service.getBase64Ticket();
 
-        //todo: set ticket in redis
+        await service.setTicket(ticket, userId);
+
+        res.status(200).json({ticket: ticket});
     }
 }

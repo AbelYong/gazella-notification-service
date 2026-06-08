@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import swaggerJsDoc from "swagger-jsdoc"
 import swaggerUi from "swagger-ui-express"
 import { swaggerOptions } from "./swagger.js"
+import { redisClient } from "./caching/redis_client.js"
 import { rabbitMQService } from "./messaging/rabbitmq.js"
 import { NotificationsRouter } from "./routes.js"
 import { globalErrorHandler } from "./handlers/error_handler.js"
@@ -21,9 +22,9 @@ async function startServer() {
         app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
     }
 
-    app.use("/", NotificationsRouter);
-
     await bootstrap();
+
+    app.use("/", NotificationsRouter);
 
     app.use(globalErrorHandler);
 
@@ -35,12 +36,18 @@ async function startServer() {
 
 async function bootstrap() {
     await rabbitMQService.connect();
+    await redisClient.connect();
 
     //todo: create and initialize consumers
 }
 
 process.on("SIGINT", async () =>{
     await rabbitMQService.close();
+
+    if (redisClient.isOpen) {
+        await redisClient.quit();
+    }
+
     process.exit(0);
 });
 

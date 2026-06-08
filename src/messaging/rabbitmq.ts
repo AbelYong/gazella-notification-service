@@ -114,7 +114,7 @@ export class RabbitMQService {
             }
         });
 
-        console.log("[RabbitMQ] Toplogy configured (Account -> Wait -> Account | DLQ)");
+        console.log("[RabbitMQ] Toplogy configured (Notifications -> Wait -> Account | DLQ)");
     }
 
     private scheduleReconnect(): void {
