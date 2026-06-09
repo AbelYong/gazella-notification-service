@@ -1,6 +1,4 @@
+import { NewFollowerInput } from "../schemas/social_schema.js";
 import { BaseNotification } from "./base_notification.js"
 
-export type NewFollowerNotification = BaseNotification<{
-    followedId: string;
-    newFollowerId: string;
-}>;
+export type NewFollowerNotification = BaseNotification<NewFollowerInput>;

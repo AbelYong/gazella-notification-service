@@ -51,7 +51,6 @@ export class SocialConsumer {
 
                 this.stream.broadcastToUser(validMsg.followedId, newNotification);
                 this.channel.ack(msg);
-
             } else {
                 console.warn(`[EVENT] A malformed new follower message has been received: ${isValid.error}`);
 

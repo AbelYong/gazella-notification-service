@@ -2,6 +2,7 @@ import { describe, test, beforeAll, afterAll, expect, vi } from "vitest";
 import { Request, Response, NextFunction } from "express";
 import * as http from "node:http";
 
+// Note: authorID in the notifications must coincide with the sub of the authenticated user
 const testUserId = "438620bf-0884-483b-9cd2-a965caaae1f5";
 
 vi.mock("../../src/validators/auth_validator.js", () => ({
@@ -16,24 +17,22 @@ vi.mock("../../src/validators/auth_validator.js", () => ({
 }));
 
 import { db } from "../../src/drizzle/db.js";
-import { SocialRepository } from "../../src/data_access/social_repository.js";
+import { ArticleRepository } from "../../src/data_access/article_repository.js";
 import { buildRedisClient } from "../../src/caching/redis_client.js";
 import { RabbitMQService, NOTIFICATIONS_EXCHANGE } from "../../src/messaging/rabbitmq.js";
 import { makeStreamRouter } from "../../src/routes/stream_routes.js";
 import { StreamService } from "../../src/services/stream_service.js";
-import { SocialConsumer } from "../../src/messaging/social_consumer.js";
+import { ArticleConsumer } from "../../src/messaging/article_consumer.js";
 
 import { createTypedSseClient } from "./helpers/sse_helper.js";
 import { startTestServer } from "./helpers/server_helper.js";
-import { NewFollowerNotification } from "../../src/public_schemas/social_notification.js";
+import { ArticleLikedNotification, ArticleCommentedNotification } from "../../src/public_schemas/article_notification.js";
 
-describe("Social Notifications - Full E2E Flow", () => {
+describe("Article Notifications - Full E2E Flow", () => {
     let redisClient: any;
     let rabbitMQService: RabbitMQService;
     let server: http.Server;
     let baseUrl: string;
-
-    let testNewFollowerId = "d5b998c7-76fe-41fe-98b3-430d4c76bc77";
 
     beforeAll(async () => {
         redisClient = buildRedisClient(process.env["REDIS_URL"]);
@@ -43,8 +42,8 @@ describe("Social Notifications - Full E2E Flow", () => {
         await rabbitMQService.connect();
 
         const streamService = new StreamService(redisClient);
-        const repository = new SocialRepository(db);
-        const consumer = new SocialConsumer(rabbitMQService.getChannel(), repository, streamService);
+        const repository = new ArticleRepository(db);
+        const consumer = new ArticleConsumer(rabbitMQService.getChannel(), repository, streamService);
         await consumer.initialize();
 
         const streamRouter = makeStreamRouter(streamService);
@@ -71,27 +70,55 @@ describe("Social Notifications - Full E2E Flow", () => {
         }
     });
 
-    test("Should send a typed SSE to the client after RabbitMQ receives an event", async () => {
-        const client = await createTypedSseClient<NewFollowerNotification>(baseUrl, "MockJWT");
+    test("Should send an Article Liked SSE when RabbitMQ receives an article.liked event", async () => {
+        const client = await createTypedSseClient<ArticleLikedNotification>(baseUrl, "MockJWT");
 
-        const mockEvent = {
-            followedId: testUserId,
-            newFollowerId: testNewFollowerId,
-            newFollowerName: "new follower",
-            timestamp: new Date().toISOString()
+        const mockLikeEvent = {
+            articleId: "d5b998c7-76fe-41fe-98b3-430d4c76bc77",
+            authorId: testUserId,
+            likeId: "a227a27e-ebcc-4a2f-b0ea-e4d39ae918d5",
+            likeAuthorId: "0f21a04a-a66a-44a0-8479-da93329f0728"
         };
 
         rabbitMQService.getChannel().publish(
             NOTIFICATIONS_EXCHANGE,
-            "new.follower",
-            Buffer.from(JSON.stringify(mockEvent))
+            "article.liked", 
+            Buffer.from(JSON.stringify(mockLikeEvent))
         );
 
         const receivedData = await client.nextMessage;
 
         expect(receivedData).toBeDefined();
         expect(receivedData.addresseeId).toBe(testUserId);
-        expect(receivedData.messageBody.newFollowerId).toBe(testNewFollowerId);
+        expect(receivedData.messageBody.articleId).toBe(mockLikeEvent.articleId);
+        expect(receivedData.messageBody.likeAuthorId).toBe(mockLikeEvent.likeAuthorId);
+
+        client.close();
+    }, 15000);
+
+    test("Should send an Article Commented SSE when RabbitMQ receives an article.commented event", async () => {
+        const client = await createTypedSseClient<ArticleCommentedNotification>(baseUrl, "MockJWT");
+
+        const mockCommentEvent = {
+            articleId: "d5b998c7-76fe-41fe-98b3-430d4c76bc77",
+            authorId: testUserId,
+            commentId: "1aba5d19-89c4-49e3-addb-582866c90e7d",
+            commentAuthorId: "0f21a04a-a66a-44a0-8479-da93329f0728",
+            content: "Great article! I think..."
+        };
+
+        rabbitMQService.getChannel().publish(
+            NOTIFICATIONS_EXCHANGE,
+            "article.commented", 
+            Buffer.from(JSON.stringify(mockCommentEvent))
+        );
+
+        const receivedData = await client.nextMessage;
+
+        expect(receivedData).toBeDefined();
+        expect(receivedData.addresseeId).toBe(testUserId);
+        expect(receivedData.messageBody.commentId).toBe(mockCommentEvent.commentId);
+        expect(receivedData.messageBody.content).toBe(mockCommentEvent.content);
 
         client.close();
     }, 15000);

@@ -18,5 +18,6 @@ declare module "vitest" {
   export interface ProvidedContext {
     dbUri: string;
     rabbitUri: string;
+    redisUri: string;
   }
 }
