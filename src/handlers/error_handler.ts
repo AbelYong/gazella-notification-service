@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express"
+import { ServiceError } from "../services/service_error.js";
 
 export const globalErrorHandler = (
     err: any,
@@ -6,8 +7,8 @@ export const globalErrorHandler = (
     res: Response,
     _next: NextFunction
 ): void => {
-    if (process.env["NODE_ENV"] !== 'test') {
-        console.error("Error:", err);
+    if (handleServiceError(err, res)) {
+        return;
     }
 
     if (err.name === "UnauthorizedError") {
@@ -27,6 +28,10 @@ export const globalErrorHandler = (
         return;
     }
 
+    if (process.env["NODE_ENV"] !== 'test') {
+        console.error("Error:", err);
+    }
+
     res.status(500).json({
         error: "Internal Server Error",
         message: process.env["NODE_ENV"] === "production" ?
@@ -34,6 +39,15 @@ export const globalErrorHandler = (
             :
             err.message
     });
+}
+
+function handleServiceError(err: any, res: Response): boolean {
+    let isHandled = false;
+    if (err instanceof ServiceError) {
+        res.status(err.statusCode).json({message: err.message});
+        isHandled = true;
+    }
+    return isHandled;
 }
 
 const errorCodes: Set<string> = new Set([

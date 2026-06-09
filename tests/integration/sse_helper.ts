@@ -1,12 +1,14 @@
 import { EventSource } from "eventsource";
 
 export async function createTypedSseClient<T>(baseUrl: string, jwtToken: string) {
-    const ticketResponse = await fetch(`${baseUrl}/ticket`, {
+    const ticketResponse = await fetch(`${baseUrl}/tickets`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${jwtToken}` }
     });
     
-    if (!ticketResponse.ok) throw new Error("No se pudo obtener el ticket SSE");
+    if (!ticketResponse.ok) {
+        throw new Error("Failed to get the SSE ticket");
+    }
     const { ticket } = await ticketResponse.json();
 
     const eventSource = new EventSource(`${baseUrl}/stream?ticket=${ticket}`);

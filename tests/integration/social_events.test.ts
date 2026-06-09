@@ -20,7 +20,7 @@ import { db } from "../../src/drizzle/db.js";
 import { SocialRepository } from "../../src/data_access/social_repository.js";
 import { buildRedisClient } from "../../src/caching/redis_client.js";
 import { RabbitMQService, NOTIFICATIONS_EXCHANGE } from "../../src/messaging/rabbitmq.js";
-import { makeStreamRouter } from "../../src/routes.js";
+import { makeStreamRouter } from "../../src/routes/stream_routes.js";
 import { StreamService } from "../../src/services/stream_service.js";
 import { SocialConsumer } from "../../src/messaging/social_consumer.js";
 

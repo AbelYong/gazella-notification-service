@@ -29,8 +29,10 @@ export class SocialRepository {
     }
 
     async markNotificationAsRead(notificationId: string) {
-        return await this.db.update(SocialNotifications).set({
+        const [notification] = await this.db.update(SocialNotifications).set({
             markedAsRead: true
-        }).where(eq(SocialNotifications.id, notificationId));
+        }).where(eq(SocialNotifications.id, notificationId)).returning();
+
+        return notification;
     }
 }
