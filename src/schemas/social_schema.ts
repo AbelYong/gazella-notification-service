@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const NewFollowerSchema = z.object({
+    eventKey: z.enum(["NEW_FOLLOWER"]).default("NEW_FOLLOWER"),
     followedId: z.uuidv4(),
     newFollowerId: z.uuidv4(),
     newFollowerName: z.string(),

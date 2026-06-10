@@ -1,7 +1,10 @@
 import { NewFollowerInput } from "../schemas/social_schema.js"
 import { ArticleCommentedInput, ArticleLikedInput } from "../schemas/article_schema.js"
+import { NewEnrollmentInput, EnrollmentCancelledInput, ProjectAboutToBeginInput, ProjectFullInput } from "../schemas/project_schema.js";
 
 export class NewFollowerMsg implements NewFollowerInput {
+    public readonly eventKey = "NEW_FOLLOWER";
+    
     constructor(
         public readonly followedId: string,
         public readonly newFollowerId: string,
@@ -16,6 +19,8 @@ export class NewFollowerMsg implements NewFollowerInput {
 }
 
 export class ArticleLikedMsg implements ArticleLikedInput {
+    public readonly eventKey = "ARTICLE_LIKED";
+
     constructor(
         public readonly articleId: string,
         public readonly authorId: string,
@@ -30,6 +35,8 @@ export class ArticleLikedMsg implements ArticleLikedInput {
 }
 
 export class ArticleCommentedMsg implements ArticleCommentedInput {
+    public readonly eventKey = "ARTICLE_COMMENTED";
+
     constructor(
         public readonly articleId: string,
         public readonly authorId: string,
@@ -42,5 +49,61 @@ export class ArticleCommentedMsg implements ArticleCommentedInput {
         this.commentId = commentId;
         this.commentAuthorId = commentAuthorId;
         this.content = content; 
+    }
+}
+
+class EnrollmentMsg {
+    constructor(
+        public readonly projectId: string,
+        public readonly organizerId: string,
+        public readonly projectTitle: string,
+        public readonly volunteerId: string,
+        public readonly volunteerName: string
+    ) {
+        this.projectId = projectId;
+        this.organizerId = organizerId;
+        this.projectTitle = projectTitle;
+        this.volunteerId = volunteerId;
+        this.volunteerName = volunteerName;
+    }
+}
+
+export class NewEnrollmentMsg extends EnrollmentMsg implements NewEnrollmentInput {
+    public readonly eventKey = "NEW_ENROLLMENT";
+}
+
+export class EnrollmentCancelledMsg extends EnrollmentMsg implements EnrollmentCancelledInput {
+    public readonly eventKey = "ENROLLMENT_CANCELLED";
+}
+
+export class ProjectAboutToBeginMsg implements ProjectAboutToBeginInput {
+    public readonly eventKey = "PROJECT_START_NEAR";
+
+    constructor(
+        public readonly projectId: string,
+        public readonly organizerId: string,
+        public readonly projectTitle: string,
+        public readonly startDate: Date,
+        public readonly volunteerId: string,
+    ) {
+        this.projectId = projectId;
+        this.organizerId = organizerId;
+        this.projectTitle = projectTitle;
+        this.startDate = startDate;
+        this.volunteerId = volunteerId;
+    }
+}
+
+export class ProjectFullMsg implements ProjectFullInput {
+    public readonly eventKey = "PROJECT_FULL";
+
+    constructor(
+        public readonly projectId: string,
+        public readonly organizerId: string,
+        public readonly projectTitle: string
+    ) {
+        this.projectId = projectId;
+        this.organizerId = organizerId;
+        this.projectTitle = projectTitle;
     }
 }

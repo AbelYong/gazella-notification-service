@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const ArticleLikedSchema = z.object({
+    eventKey: z.enum(["ARTICLE_LIKED"]).default("ARTICLE_LIKED"),
     articleId: z.uuidv4(),
     authorId: z.uuidv4(),
     likeId: z.uuidv4(),
@@ -10,6 +11,7 @@ export const ArticleLikedSchema = z.object({
 export type ArticleLikedInput = z.infer<typeof ArticleLikedSchema>
 
 export const ArticleCommentedSchema = z.object({
+    eventKey: z.enum(["ARTICLE_COMMENTED"]).default("ARTICLE_COMMENTED"),
     articleId: z.uuidv4(),
     authorId: z.uuidv4(),
     commentId: z.uuidv4(),
