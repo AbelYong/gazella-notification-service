@@ -10,6 +10,8 @@ import { ProjectRepository } from "./data_access/project_repository.js"
 import { redisClient } from "./caching/redis_client.js"
 import { rabbitMQService } from "./messaging/rabbitmq.js"
 import { SocialConsumer } from "./messaging/social_consumer.js"
+import { ProjectConsumer } from "./messaging/project_consumer.js"
+import { ArticleConsumer } from "./messaging/article_consumer.js"
 import { StreamService } from "./services/stream_service.js"
 import { InboxService } from "./services/inbox_service.js"
 import { makeStreamRouter } from "./routes/stream_routes.js"
@@ -61,8 +63,12 @@ async function bootstrap() {
 
     const channel = rabbitMQService.getChannel();
     const socialConsumer = new SocialConsumer(channel, socialRepository, streamService);
+    const articleConsumer = new ArticleConsumer(channel, articleRepository, streamService);
+    const projectConsumer = new ProjectConsumer(channel, projectRepository, streamService);
 
     await socialConsumer.initialize();
+    await articleConsumer.initialize();
+    await projectConsumer.initialize();
 }
 
 process.on("SIGINT", async () =>{

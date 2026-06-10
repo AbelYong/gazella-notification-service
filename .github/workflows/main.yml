@@ -1,0 +1,35 @@
+name: Build and Analyze
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Shallow clones disable some analysis features
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: 'npm'    
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Generate database migration script
+        run: npm run db:generate  
+      
+      - name: Run Tests with Coverage
+        run: npm run test:coverage
+        
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
