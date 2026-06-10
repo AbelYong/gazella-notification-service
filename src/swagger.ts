@@ -4,7 +4,7 @@ export const swaggerOptions : Options = {
     definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Gazella Notifications Services API',
+      title: 'Gazella Notifications Service API',
       version: '1.0.0',
       description: "Gazella Notifications microservice API Documentation",
     },

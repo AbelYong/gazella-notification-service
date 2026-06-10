@@ -13,17 +13,20 @@ export const globalErrorHandler = (
 
     if (err.name === "UnauthorizedError") {
         res.status(401).json({
-            error: "Access deniend",
+            error: "Access denied",
             message: err.message,
             code: "UNAUTHORIZED"
         });
         return;
     }
 
-    if (errorCodes.has(err.code)) {
+    const isServiceUnavailable =
+        errorCodes.has(err.code) || (err.message === "The client is offline");
+
+    if (isServiceUnavailable) {
         res.status(503).json({
-            error: "Service unavaible",
-            message: "A downstream service or database is currently unavaible. Please try again later"
+            error: "Service unavailable",
+            message: "A downstream service or database is currently unavailable. Please try again later"
         });
         return;
     }
@@ -52,6 +55,7 @@ function handleServiceError(err: any, res: Response): boolean {
 
 const errorCodes: Set<string> = new Set([
     "ECONNREFUSED",
+    "EAI_AGAIN",
     "08006",
     "57P03"
 ]);

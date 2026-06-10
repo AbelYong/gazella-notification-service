@@ -30,6 +30,6 @@ export const makeMarkNotificationAsReadController = (service: InboxService) => {
             await service.markProjectNotificationAsRead(id);
         }
 
-        res.sendStatus(200);
+        res.sendStatus(204);
     }
 }

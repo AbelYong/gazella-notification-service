@@ -3,6 +3,7 @@ import { createClient, RedisClientType } from "redis"
 export function buildRedisClient(connectionUrl?: string): RedisClientType {
     const client = createClient({
         url: connectionUrl || process.env["REDIS_URL"] || "redis://localhost:6379",
+        disableOfflineQueue: true,
         socket: {
             reconnectStrategy: (retries, _cause) => {
                 const MAX_RETRIES = 20;

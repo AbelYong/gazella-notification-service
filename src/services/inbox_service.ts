@@ -31,7 +31,7 @@ export class InboxService {
         const notification = await this.socialRepo.markNotificationAsRead(notificationId);
 
         if (!notification) {
-            throw new NotFoundError(`A social notification with Id: ${notificationId} could not be found. It might been marked as read already`);
+            throw new NotFoundError(`A social notification with Id: ${notificationId} could not be found. It might have been marked as read already`);
         }
     }
 
@@ -44,7 +44,7 @@ export class InboxService {
         const notification = await this.articleRepo.markNotificationAsRead(notificationId);
 
         if (!notification) {
-            throw new NotFoundError(`An article notification with Id: ${notificationId} could not be found. It might been marked as read already`);
+            throw new NotFoundError(`An article notification with Id: ${notificationId} could not be found. It might have been marked as read already`);
         }
     }
 
@@ -57,7 +57,7 @@ export class InboxService {
         const notification = await this.projectRepo.markNotificationAsRead(notificationId);
 
         if (!notification) {
-            throw new NotFoundError(`A project notification with Id: ${notificationId} could not be found. It might been marked as read already`);
+            throw new NotFoundError(`A project notification with Id: ${notificationId} could not be found. It might have been marked as read already`);
         }
     }
 }
